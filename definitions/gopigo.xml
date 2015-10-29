@@ -1,0 +1,389 @@
+<?xml version='1.0'?>
+<mavlink>
+    <include>mavlink/message_definitions/v1.0/common.xml</include>
+    <!-- note that APM specific messages should use the command id
+     range from 150 to 250, to leave plenty of room for growth
+     of common.xml
+
+     If you prototype a message here, then you should consider if it
+     is general enough to move into common.xml later
+   -->
+
+    <enums>
+
+        <!-- gopigo specific MAV_CMD_* commands, based on ardupilot -->
+        <enum name="MAV_CMD">
+            <entry name="MAV_CMD_DO_MOTOR_TEST" value="209">
+                <description>Mission command to perform motor test</description>
+                <param index="1">motor sequence number (a number from 1 to max number of motors on the vehicle)</param>
+                <param index="2">throttle type (0=throttle percentage, 1=PWM, 2=pilot throttle channel pass-through. See MOTOR_TEST_THROTTLE_TYPE enum)</param>
+                <param index="3">throttle</param>
+                <param index="4">timeout (in seconds)</param>
+                <param index="5">Empty</param>
+                <param index="6">Empty</param>
+                <param index="7">Empty</param>
+            </entry>
+
+            <entry name="MAV_CMD_DO_START_MAG_CAL" value="42424">
+                <description>Initiate a magnetometer calibration</description>
+                <param index="1">uint8_t bitmask of magnetometers (0 means all)</param>
+                <param index="2">Automatically retry on failure (0=no retry, 1=retry).</param>
+                <param index="3">Save without user input (0=require input, 1=autosave).</param>
+                <param index="4">Delay (seconds)</param>
+                <param index="5">Empty</param>
+                <param index="6">Empty</param>
+                <param index="7">Empty</param>
+            </entry>
+
+            <entry name="MAV_CMD_DO_ACCEPT_MAG_CAL" value="42425">
+                <description>Initiate a magnetometer calibration</description>
+                <param index="1">uint8_t bitmask of magnetometers (0 means all)</param>
+                <param index="2">Empty</param>
+                <param index="3">Empty</param>
+                <param index="4">Empty</param>
+                <param index="5">Empty</param>
+                <param index="6">Empty</param>
+                <param index="7">Empty</param>
+            </entry>
+
+            <entry name="MAV_CMD_DO_CANCEL_MAG_CAL" value="42426">
+                <description>Cancel a running magnetometer calibration</description>
+                <param index="1">uint8_t bitmask of magnetometers (0 means all)</param>
+                <param index="2">Empty</param>
+                <param index="3">Empty</param>
+                <param index="4">Empty</param>
+                <param index="5">Empty</param>
+                <param index="6">Empty</param>
+                <param index="7">Empty</param>
+            </entry>
+        </enum>
+
+        <!--  AP_Limits Enums -->
+        <enum name="LIMITS_STATE">
+            <entry name="LIMITS_INIT" value="0"> <description> pre-initialization</description></entry>
+            <entry name="LIMITS_DISABLED" value="1"> <description> disabled</description></entry>
+            <entry name="LIMITS_ENABLED" value="2"> <description> checking limits</description></entry>
+            <entry name="LIMITS_TRIGGERED" value="3"> <description> a limit has been breached</description></entry>
+            <entry name="LIMITS_RECOVERING" value="4"> <description> taking action eg. RTL</description></entry>
+            <entry name="LIMITS_RECOVERED" value="5"> <description> we're no longer in breach of a limit</description></entry>
+        </enum>
+
+        <!--  AP_Limits Modules - power of 2 (1,2,4,8,16,32 etc) so we can send as bitfield -->
+        <enum name="LIMIT_MODULE">
+            <entry name="LIMIT_GPSLOCK" value="1"> <description> pre-initialization</description></entry>
+            <entry name="LIMIT_GEOFENCE" value="2"> <description> disabled</description></entry>
+            <entry name="LIMIT_ALTITUDE" value="4"> <description> checking limits</description></entry>
+        </enum>
+
+        <!-- motor test type enum -->
+        <enum name="MOTOR_TEST_THROTTLE_TYPE">
+            <entry name="MOTOR_TEST_THROTTLE_PERCENT" value="0">
+                <description>throttle as a percentage from 0 ~ 100</description>
+            </entry>
+            <entry name="MOTOR_TEST_THROTTLE_PWM" value="1">
+                <description>throttle as an absolute PWM value (normally in range of 1000~2000)</description>
+            </entry>
+            <entry name="MOTOR_TEST_THROTTLE_PILOT" value="2">
+                <description>throttle pass-through from pilot's transmitter</description>
+            </entry>
+        </enum>
+
+        <!-- Camera event types -->
+        <enum name="CAMERA_STATUS_TYPES">
+            <entry name="CAMERA_STATUS_TYPE_HEARTBEAT"  value="0"><description>Camera heartbeat, announce camera component ID at 1hz</description></entry>
+            <entry name="CAMERA_STATUS_TYPE_TRIGGER"    value="1"><description>Camera image triggered</description></entry>
+            <entry name="CAMERA_STATUS_TYPE_DISCONNECT" value="2"><description>Camera connection lost</description></entry>
+            <entry name="CAMERA_STATUS_TYPE_ERROR"      value="3"><description>Camera unknown error</description></entry>
+        </enum>
+
+        <!-- camera feedback flags, a little bit of future-proofing -->
+        <enum name="CAMERA_FEEDBACK_FLAGS">
+            <entry name="CAMERA_FEEDBACK_PHOTO"         value="0"> <description>Shooting photos, not video</description></entry>
+            <entry name="CAMERA_FEEDBACK_VIDEO"         value="1"> <description>Shooting video, not stills</description></entry>
+        </enum>
+
+        <!-- led control pattern enums (enumeration of specific patterns) -->
+        <enum name="LED_CONTROL_PATTERN">
+            <entry name="LED_CONTROL_PATTERN_OFF" value="0"> <description>LED patterns off (return control to regular vehicle control)</description></entry>
+            <entry name="LED_CONTROL_PATTERN_FIRMWAREUPDATE" value="1"> <description>LEDs show pattern during firmware update</description></entry>
+            <entry name="LED_CONTROL_PATTERN_CUSTOM" value="255"> <description>Custom Pattern using custom bytes fields</description></entry>
+        </enum>
+
+        <enum name="MAG_CAL_STATUS">
+            <entry name="MAG_CAL_NOT_STARTED" value="0"></entry>
+            <entry name="MAG_CAL_WAITING_TO_START" value="1"></entry>
+            <entry name="MAG_CAL_RUNNING_STEP_ONE" value="2"></entry>
+            <entry name="MAG_CAL_RUNNING_STEP_TWO" value="3"></entry>
+            <entry name="MAG_CAL_SUCCESS" value="4"></entry>
+            <entry name="MAG_CAL_FAILED" value="5"></entry>
+        </enum>
+
+        <enum name="PID_TUNING_AXIS">
+            <entry name="PID_TUNING_ROLL"  value="1"></entry>
+            <entry name="PID_TUNING_PITCH" value="2"></entry>
+            <entry name="PID_TUNING_YAW"   value="3"></entry>
+            <entry name="PID_TUNING_ACCZ"  value="4"></entry>
+            <entry name="PID_TUNING_STEER" value="5"></entry>
+        </enum>
+
+    </enums>
+
+    <messages>
+        <message id="150" name="SENSOR_OFFSETS">
+            <description>Offsets and calibrations values for hardware
+                sensors. This makes it easier to debug the calibration process.</description>
+            <field type="int16_t" name="mag_ofs_x">magnetometer X offset</field>
+            <field type="int16_t" name="mag_ofs_y">magnetometer Y offset</field>
+            <field type="int16_t" name="mag_ofs_z">magnetometer Z offset</field>
+            <field type="float" name="mag_declination">magnetic declination (radians)</field>
+            <field type="int32_t" name="raw_press">raw pressure from barometer</field>
+            <field type="int32_t" name="raw_temp">raw temperature from barometer</field>
+            <field type="float" name="gyro_cal_x">gyro X calibration</field>
+            <field type="float" name="gyro_cal_y">gyro Y calibration</field>
+            <field type="float" name="gyro_cal_z">gyro Z calibration</field>
+            <field type="float" name="accel_cal_x">accel X calibration</field>
+            <field type="float" name="accel_cal_y">accel Y calibration</field>
+            <field type="float" name="accel_cal_z">accel Z calibration</field>
+        </message>
+
+        <message id="151" name="SET_MAG_OFFSETS">
+            <description>Deprecated. Use MAV_CMD_PREFLIGHT_SET_SENSOR_OFFSETS instead. Set the magnetometer offsets</description>
+            <field type="uint8_t" name="target_system">System ID</field>
+            <field type="uint8_t" name="target_component">Component ID</field>
+            <field type="int16_t" name="mag_ofs_x">magnetometer X offset</field>
+            <field type="int16_t" name="mag_ofs_y">magnetometer Y offset</field>
+            <field type="int16_t" name="mag_ofs_z">magnetometer Z offset</field>
+        </message>
+
+        <message id="153" name="AP_ADC">
+            <description>raw ADC output</description>
+            <field type="uint16_t" name="adc1">ADC output 1</field>
+            <field type="uint16_t" name="adc2">ADC output 2</field>
+            <field type="uint16_t" name="adc3">ADC output 3</field>
+            <field type="uint16_t" name="adc4">ADC output 4</field>
+            <field type="uint16_t" name="adc5">ADC output 5</field>
+            <field type="uint16_t" name="adc6">ADC output 6</field>
+        </message>
+
+        <!-- Camera Controller Messages -->
+        <message name="DIGICAM_CONTROL" id="155">
+            <description>Control on-board Camera Control System to take shots.</description>
+            <field name="target_system" type="uint8_t">System ID</field>
+            <field name="target_component" type="uint8_t">Component ID</field>
+            <field name="session" type="uint8_t">0: stop, 1: start or keep it up //Session control e.g. show/hide lens</field>
+            <field name="shot" type="uint8_t">0: ignore, 1: shot or start filming</field>
+            <field name="command_id" type="uint8_t">Command Identity (incremental loop: 0 to 255)//A command sent multiple times will be executed or pooled just once</field>
+            <field name="extra_param" type="uint8_t">Extra parameters enumeration (0 means ignore)</field>
+            <field name="extra_value" type="float">Correspondent value to given extra_param</field>
+        </message>
+
+        <message name="AHRS" id="163">
+            <description>Status of DCM attitude estimator</description>
+            <field type="float" name="omegaIx">X gyro drift estimate rad/s</field>
+            <field type="float" name="omegaIy">Y gyro drift estimate rad/s</field>
+            <field type="float" name="omegaIz">Z gyro drift estimate rad/s</field>
+            <field type="float" name="accel_weight">average accel_weight</field>
+            <field type="float" name="renorm_val">average renormalisation value</field>
+            <field type="float" name="error_rp">average error_roll_pitch value</field>
+            <field type="float" name="error_yaw">average error_yaw value</field>
+        </message>
+
+        <message name="HWSTATUS" id="165">
+            <description>Status of key hardware</description>
+            <field type="uint16_t" name="Vcc">board voltage (mV)</field>
+            <field type="uint8_t"  name="I2Cerr">I2C error count</field>
+        </message>
+
+        <message name="RADIO" id="166">
+            <description>Status generated by radio</description>
+            <field type="uint8_t" name="rssi">local signal strength</field>
+            <field type="uint8_t" name="remrssi">remote signal strength</field>
+            <field type="uint8_t" name="txbuf">how full the tx buffer is as a percentage</field>
+            <field type="uint8_t" name="noise">background noise level</field>
+            <field type="uint8_t" name="remnoise">remote background noise level</field>
+            <field type="uint16_t" name="rxerrors">receive errors</field>
+            <field type="uint16_t" name="fixed">count of error corrected packets</field>
+        </message>
+
+        <!--  AP_Limits status -->
+
+        <message name="LIMITS_STATUS" id="167">
+            <description>Status of AP_Limits. Sent in extended
+                status stream when AP_Limits is enabled</description>
+            <field name="limits_state" type="uint8_t" enum="LIMITS_STATE">state of AP_Limits, (see enum LimitState, LIMITS_STATE)</field>
+            <field name="last_trigger" type="uint32_t">time of last breach in milliseconds since boot</field>
+            <field name="last_action" type="uint32_t">time of last recovery action in milliseconds since boot</field>
+            <field name="last_recovery" type="uint32_t">time of last successful recovery in milliseconds since boot</field>
+            <field name="last_clear" type="uint32_t">time of last all-clear in milliseconds since boot</field>
+            <field name="breach_count" type="uint16_t">number of fence breaches</field>
+            <field name="mods_enabled" type="uint8_t">AP_Limit_Module bitfield of enabled modules, (see enum moduleid or LIMIT_MODULE)</field>
+            <field name="mods_required" type="uint8_t">AP_Limit_Module bitfield of required modules, (see enum moduleid or LIMIT_MODULE)</field>
+            <field name="mods_triggered" type="uint8_t">AP_Limit_Module bitfield of triggered modules, (see enum moduleid or LIMIT_MODULE)</field>
+        </message>
+
+        <message name="DATA16" id="169">
+            <description>Data packet, size 16</description>
+            <field type="uint8_t" name="type">data type</field>
+            <field type="uint8_t" name="len">data length</field>
+            <field type="uint8_t[16]" name="data">raw data</field>
+        </message>
+
+        <message name="DATA32" id="170">
+            <description>Data packet, size 32</description>
+            <field type="uint8_t" name="type">data type</field>
+            <field type="uint8_t" name="len">data length</field>
+            <field type="uint8_t[32]" name="data">raw data</field>
+        </message>
+
+        <message name="DATA64" id="171">
+            <description>Data packet, size 64</description>
+            <field type="uint8_t" name="type">data type</field>
+            <field type="uint8_t" name="len">data length</field>
+            <field type="uint8_t[64]" name="data">raw data</field>
+        </message>
+
+        <message name="DATA96" id="172">
+            <description>Data packet, size 96</description>
+            <field type="uint8_t" name="type">data type</field>
+            <field type="uint8_t" name="len">data length</field>
+            <field type="uint8_t[96]" name="data">raw data</field>
+        </message>
+
+        <message name="RANGEFINDER" id="173">
+            <description>Rangefinder reporting</description>
+            <field type="float" name="distance">distance in meters</field>
+            <field type="float" name="voltage">raw voltage if available, zero otherwise</field>
+        </message>
+
+        <!-- rally point messages -->
+        <message name="RALLY_POINT" id="175">
+            <description>A rally point. Used to set a point when from GCS -> MAV. Also used to return a point from MAV -> GCS</description>
+            <field name="target_system" type="uint8_t">System ID</field>
+            <field name="target_component" type="uint8_t">Component ID</field>
+            <field name="idx" type="uint8_t">point index (first point is 0)</field>
+            <field name="count" type="uint8_t">total number of points (for sanity checking)</field>
+            <field name="lat" type="int32_t">Latitude of point in degrees * 1E7</field>
+            <field name="lng" type="int32_t">Longitude of point in degrees * 1E7</field>
+            <field name="alt" type="int16_t">Transit / loiter altitude in meters relative to home</field>
+            <!-- Path planned landings are still in the future, but we want these fields ready: -->
+            <field name="break_alt" type="int16_t">Break altitude in meters relative to home</field>
+            <field name="land_dir" type="uint16_t">Heading to aim for when landing. In centi-degrees.</field>
+            <field name="flags" type="uint8_t">See RALLY_FLAGS enum for definition of the bitmask.</field>
+        </message>
+
+        <message name="RALLY_FETCH_POINT" id="176">
+            <description>Request a current rally point from MAV. MAV should respond with a RALLY_POINT message. MAV should not respond if the request is invalid.</description>
+            <field name="target_system" type="uint8_t">System ID</field>
+            <field name="target_component" type="uint8_t">Component ID</field>
+            <field name="idx" type="uint8_t">point index (first point is 0)</field>
+        </message>
+
+        <message name="COMPASSMOT_STATUS" id="177">
+            <description>Status of compassmot calibration</description>
+            <field name="throttle" type="uint16_t">throttle (percent*10)</field>
+            <field name="current" type="float">current (amps)</field>
+            <field name="interference" type="uint16_t">interference (percent)</field>
+            <field name="CompensationX" type="float">Motor Compensation X</field>
+            <field name="CompensationY" type="float">Motor Compensation Y</field>
+            <field name="CompensationZ" type="float">Motor Compensation Z</field>
+        </message>
+
+        <!-- camera event message from CCB to autopilot: for image trigger events but also things like heartbeat, error, low power, full card, etc -->
+        <message name="CAMERA_STATUS" id="179">
+            <description>Camera Event</description>
+            <field name="time_usec" type="uint64_t">Image timestamp (microseconds since UNIX epoch, according to camera clock)</field>
+            <field name="target_system" type="uint8_t" >System ID</field>   <!-- support multiple concurrent vehicles -->
+            <field name="cam_idx"   type="uint8_t" >Camera ID</field>       <!-- component ID, to support multiple cameras -->
+            <field name="img_idx"   type="uint16_t" >Image index</field>    <!-- per camera image index, should be unique+sequential within a mission, preferably non-wrapping -->
+            <field name="event_id"  type="uint8_t" >See CAMERA_STATUS_TYPES enum for definition of the bitmask</field>
+            <field name="p1"        type="float"   >Parameter 1 (meaning depends on event, see CAMERA_STATUS_TYPES enum)</field>
+            <field name="p2"        type="float"   >Parameter 2 (meaning depends on event, see CAMERA_STATUS_TYPES enum)</field>
+            <field name="p3"        type="float"   >Parameter 3 (meaning depends on event, see CAMERA_STATUS_TYPES enum)</field>
+            <field name="p4"        type="float"   >Parameter 4 (meaning depends on event, see CAMERA_STATUS_TYPES enum)</field>
+        </message>
+
+        <!-- camera feedback message - can be originated from CCB (in response to a CAMERA_STATUS), or directly from the autopilot as part of a DO_DIGICAM_CONTROL-->
+        <message name="CAMERA_FEEDBACK" id="180">
+            <description>Camera Capture Feedback</description>
+            <field name="time_usec" type="uint64_t">Image timestamp (microseconds since UNIX epoch), as passed in by CAMERA_STATUS message (or autopilot if no CCB)</field>
+            <field name="target_system" type="uint8_t" >System ID</field>   <!-- support multiple concurrent vehicles -->
+            <field name="cam_idx"   type="uint8_t" >Camera ID</field>       <!-- component ID, to support multiple cameras -->
+            <field name="img_idx"   type="uint16_t">Image index</field>     <!-- per camera image index, should be unique+sequential within a mission, preferably non-wrapping -->
+            <field name="lat"       type="int32_t" >Latitude in (deg * 1E7)</field>
+            <field name="lng"       type="int32_t" >Longitude in (deg * 1E7)</field>
+            <field name="alt_msl"   type="float"   >Altitude Absolute (meters AMSL)</field>
+            <field name="alt_rel"   type="float"   >Altitude Relative (meters above HOME location)</field>
+            <field name="roll"      type="float"   >Camera Roll angle (earth frame, degrees, +-180)</field>  <!-- initially only supporting fixed cameras, in future we'll need feedback messages from the gimbal so we can include that offset here -->
+            <field name="pitch"     type="float"   >Camera Pitch angle (earth frame, degrees, +-180)</field> <!-- initially only supporting fixed cameras, in future we'll need feedback messages from the gimbal so we can include that offset here -->
+            <field name="yaw"       type="float"   >Camera Yaw (earth frame, degrees, 0-360, true)</field>   <!-- initially only supporting fixed cameras, in future we'll need feedback messages from the gimbal so we can include that offset here -->
+            <field name="foc_len"   type="float"   >Focal Length (mm)</field> <!-- per-image to support zooms. Zero means fixed focal length or unknown. Should be true mm, not scaled to 35mm film equivalent -->
+            <field name="flags"     type="uint8_t" >See CAMERA_FEEDBACK_FLAGS enum for definition of the bitmask</field> <!-- future proofing -->
+        </message>
+
+        <message name="AUTOPILOT_VERSION_REQUEST" id="183">
+            <description>Request the autopilot version from the system/component.</description>
+            <field type="uint8_t" name="target_system">System ID</field>
+            <field type="uint8_t" name="target_component">Component ID</field>
+        </message>
+
+        <message name="LED_CONTROL" id="186">
+            <description>Control vehicle LEDs</description>
+            <field type="uint8_t" name="target_system">System ID</field>
+            <field type="uint8_t" name="target_component">Component ID</field>
+            <field type="uint8_t" name="instance">Instance (LED instance to control or 255 for all LEDs)</field>
+            <field type="uint8_t" name="pattern">Pattern (see LED_PATTERN_ENUM)</field>
+            <field type="uint8_t" name="custom_len">Custom Byte Length</field>
+            <field type="uint8_t[24]" name="custom_bytes">Custom Bytes</field>
+        </message>
+
+        <message name="MAG_CAL_PROGRESS" id="191">
+            <description>Reports progress of compass calibration.</description>
+            <field type="uint8_t" name="compass_id">Compass being calibrated</field>
+            <field type="uint8_t" name="cal_mask">Bitmask of compasses being calibrated</field>
+            <field type="uint8_t" name="cal_status">Status (see MAG_CAL_STATUS enum)</field>
+            <field type="uint8_t" name="attempt">Attempt number</field>
+            <field type="uint8_t" name="completion_pct">Completion percentage</field>
+            <field type="uint8_t[10]" name="completion_mask">Bitmask of sphere sections (see http://en.wikipedia.org/wiki/Geodesic_grid)</field>
+            <field type="float" name="direction_x">Body frame direction vector for display</field>
+            <field type="float" name="direction_y">Body frame direction vector for display</field>
+            <field type="float" name="direction_z">Body frame direction vector for display</field>
+        </message>
+
+        <message name="MAG_CAL_REPORT" id="192">
+            <description>Reports results of completed compass calibration. Sent until MAG_CAL_ACK received.</description>
+            <field type="uint8_t" name="compass_id">Compass being calibrated</field>
+            <field type="uint8_t" name="cal_mask">Bitmask of compasses being calibrated</field>
+            <field type="uint8_t" name="cal_status">Status (see MAG_CAL_STATUS enum)</field>
+            <field type="uint8_t" name="autosaved">0=requires a MAV_CMD_DO_ACCEPT_MAG_CAL, 1=saved to parameters</field>
+            <field type="float" name="fitness">RMS milligauss residuals</field>
+            <field type="float" name="ofs_x">X offset</field>
+            <field type="float" name="ofs_y">Y offset</field>
+            <field type="float" name="ofs_z">Z offset</field>
+            <field type="float" name="diag_x">X diagonal (matrix 11)</field>
+            <field type="float" name="diag_y">Y diagonal (matrix 22)</field>
+            <field type="float" name="diag_z">Z diagonal (matrix 33)</field>
+            <field type="float" name="offdiag_x">X off-diagonal (matrix 12 and 21)</field>
+            <field type="float" name="offdiag_y">Y off-diagonal (matrix 13 and 31)</field>
+            <field type="float" name="offdiag_z">Z off-diagonal (matrix 32 and 23)</field>
+        </message>
+
+        <!-- realtime PID tuning message -->
+        <message name="PID_TUNING" id="194">
+            <description>PID tuning information</description>
+            <field name="axis" type="uint8_t" enum="PID_TUNING_AXIS">axis</field>
+            <field name="desired" type="float">desired rate (degrees/s)</field>
+            <field name="achieved" type="float">achieved rate (degrees/s)</field>
+            <field name="FF" type="float">FF component</field>
+            <field name="P" type="float">P component</field>
+            <field name="I" type="float">I component</field>
+            <field name="D" type="float">D component</field>
+        </message>
+
+        <message name="RPM" id="226">
+            <description>RPM sensor output</description>
+            <field name="rpm1" type="float">RPM Sensor1</field>
+            <field name="rpm2" type="float">RPM Sensor2</field>
+        </message>
+
+    </messages>
+</mavlink>
